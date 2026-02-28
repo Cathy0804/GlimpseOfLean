@@ -169,7 +169,9 @@ example {a b : ℝ}  (ha : 0 ≤ a) : b ≤ a + b := by
 /- Let's do a variant using `add_le_add_iff_left a : a + b ≤ a + c ↔ b ≤ c` instead. -/
 
 example (a b : ℝ) (hb : 0 ≤ b) : a ≤ a + b := by
-  sorry
+  calc
+    a = a + 0 := by ring
+    _ ≤ a + b := by apply (add_le_add_iff_left a).2; exact hb
 
 /-
 Important note: in the previous exercises, we used lemmas like `add_le_add_iff_left` as
@@ -207,7 +209,16 @@ example (a b : ℝ) : (a-b)*(a+b) = 0 ↔ a^2 = b^2 := by
 /- You can try it yourself in this exercise. -/
 
 example (a b : ℝ) : a = b ↔ b - a = 0 := by
-  sorry
+  constructor
+  · intro hmp
+    calc
+      b - a = b - b := by rw [hmp]
+      _ = 0 := by ring
+  · intro hmpr
+    calc
+      a = a + 0 := by ring
+      _ = a + (b - a) := by rw [← hmpr]
+      _ = b := by ring
 
 /-
 This is the end of this file where you learned how to handle implications and

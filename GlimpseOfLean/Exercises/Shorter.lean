@@ -41,7 +41,7 @@ finish the exercise.
 -/
 
 example (a b : ℝ) : (a+b)*(a-b) = a^2 - b^2 := by
-  sorry
+  ring
 
 /-
 Our next tactic is the `congr` tactic (`congr` stands for “congruence”).
@@ -60,7 +60,8 @@ Try it on the next example.
 -/
 
 example (a b : ℝ) (f : ℝ → ℝ) : f ((a+b)^2 - 2*a*b) = f (a^2 + b^2) := by
-  sorry
+  congr
+  ring
 
 /-
 When there are several mismatches, `congr` creates several goals.
@@ -136,7 +137,12 @@ pratice doing computations by hand.
 -/
 
 example (a b c : ℝ) (h : a = -b) (h' : b + c = 0) : b*(a - c) = 0 := by
-  sorry
+  calc
+    b*(a - c) = b*(-b - c) := by rw [h]
+    _ = -b*(b + c) := by ring
+    _ = -b*0 := by rw [h']
+    _ = 0 := by ring
+
 
 /-
 We can also handle inequalities using `gcongr` (which stands for “generalized congruence”)
@@ -149,8 +155,9 @@ example (a b : ℝ) (h : a ≤ 2*b) : a + b ≤ 3*b := by
     _     = 3*b     := by ring
 
 example (a b : ℝ) (h : b ≤ a) : a + b ≤ 2*a := by
-  sorry
-
+  calc
+    a + b ≤ a + a := by gcongr
+    _ = 2*a := by ring
 /-
 The last tactic you will use in computation is the simplifier `simp`. It will
 repeatedly apply a number of lemmas that are marked as simplification lemmas.
@@ -209,7 +216,7 @@ In the following exercise, you get to choose whether you want help from Lean
 or do all the work.
 -/
 example (f : ℝ → ℝ) (hf : even_fun f) : f (-5) = f 5 := by
-  sorry
+  apply hf
 
 /-
 This was about using a `∀`. Let us now see how to prove a `∀`.
@@ -329,7 +336,11 @@ need to be the same notation as in the statement.
 -/
 
 example (f g : ℝ → ℝ) (hf : even_fun f) : even_fun (g ∘ f) := by
-  sorry
+  intro x
+  specialize hf x
+  calc
+    (g ∘ f) (-x) = g (f (-x)) := by rfl
+    _ = g (f x) := by rw [hf]
 
 /-
 Let's now combine the universal quantifier with implication.
@@ -395,7 +406,10 @@ into pieces. You can choose your way in the following variation.
 
 example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_increasing g) :
     non_increasing (g ∘ f) := by
-  sorry
+  intro x₁ x₂ h
+  specialize hf x₁ x₂ h
+  specialize hg (f x₁) (f x₂) hf
+  exact hg
 
 /-
 At this stage you should feel that such a proof actually doesn’t require any
@@ -427,7 +441,8 @@ Use `simp` to prove the following. Note that `X : Set ℝ` means that `X` is a
 set containing (only) real numbers. -/
 
 example (x : ℝ) (X Y : Set ℝ) (hx : x ∈ X) : x ∈ (X ∩ Y) ∪ (X \ Y) := by
-  sorry
+  simp
+  exact hx
 
 /-
 The `apply?` tactic will find lemmas from the library and tell you their names.
@@ -437,7 +452,7 @@ Use `apply?` to find the lemma that every continuous function with compact suppo
 has a global minimum. -/
 
 example (f : ℝ → ℝ) (hf : Continuous f) (h2f : HasCompactSupport f) : ∃ x, ∀ y, f x ≤ f y := by
-  sorry
+  exact Continuous.exists_forall_le_of_hasCompactSupport hf h2f
 
 /- ## Existential quantifiers
 
@@ -476,7 +491,10 @@ example (a b c : ℤ) (h₁ : a ∣ b) (h₂ : b ∣ c) : a ∣ c := by
     _ = a*(k*l) := by ring
 
 example (a b c : ℤ) (h₁ : a ∣ b) (h₂ : a ∣ c) : a ∣ b + c := by
-  sorry
+  choose k hk using h₁; choose l hl using h₂
+  use (k + l)
+  rw [hk, hl]
+  ring
 
 /-
 ## Conjunctions
@@ -525,7 +543,7 @@ example (h : ∀ n, u n = l) : seq_limit u l := by
   intro n hn
   calc |u n - l| = |l - l| := by congr; apply h
     _            = 0       := by simp
-    _            ≤ ε       := by apply?
+    _            ≤ ε       := by exact Std.le_of_lt ε_pos
 
 /- When dealing with absolute values, we'll use the lemma:
 
@@ -651,5 +669,3 @@ def CauchySequence (u : ℕ → ℝ) :=
 
 example : (∃ l, seq_limit u l) → CauchySequence u := by
   sorry
-
-
