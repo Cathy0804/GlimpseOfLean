@@ -41,7 +41,15 @@ prove one-by-one.
 -/
 
 example (a b : ℝ) (ha : 0 < a) (hb : 0 < b) : 0 < a^2 + b^2 := by
-  sorry
+  apply add_pos
+
+  -- proving 0 < a^2
+  apply sq_pos_of_pos
+  exact ha
+
+  -- proving 0 < b^2
+  apply sq_pos_of_pos
+  exact hb
 
 /-
 You can also give a proof with forward reasoning, using the `have` tactic.
@@ -65,14 +73,17 @@ example (a : ℝ) (ha : 0 < a) : 0 < (a^2)^2 := by
 /- Now prove the same lemma as before using forwards reasoning. -/
 
 example (a b : ℝ) (ha : 0 < a) (hb : 0 < b) : 0 < a^2 + b^2 := by
-  sorry
+  have h1 : 0 < a^2 := by apply sq_pos_of_pos; exact ha
+  have h2 : 0 < b^2 := by apply sq_pos_of_pos; exact hb
+  have h3 : 0 < a^2 + b^2 := by linarith
+  exact h3
 
 
 /- ## Proving implications
 
 In order to prove an implication, we need to assume the premise and prove the conclusion.
 This is done using the `intro` tactic. Secretly the exercise above was proving the
-implication `a > 0 → (a^2)^2 > 0` but the premise was already introduced for us.
+implicatio n `a > 0 → (a^2)^2 > 0` but the premise was already introduced for us.
 -/
 
 example (a b : ℝ) : a > 0 → b > 0 → a + b > 0 := by
@@ -81,7 +92,10 @@ example (a b : ℝ) : a > 0 → b > 0 → a + b > 0 := by
 
 /- Now prove the following simple statement in propositional logic. -/
 example (p q r : Prop) : (p → q) → (p → q → r) → p → r := by
-  sorry
+  intro h h' h''
+  have h1 : q := by apply h; exact h''
+  apply h'
+  exact h''; exact h1
 
 /-
 Note that, when using `intro`, you need to give a name to the assumption.
@@ -117,7 +131,10 @@ Let's prove a variation
 -/
 
 example {a b : ℝ} (c : ℝ) : a + c ≤ b + c ↔ a ≤ b := by
-  sorry
+  rw [← sub_nonneg]
+  have key : (b + c) - (a + c) = b - a := by ring
+  rw [key]
+  rw [sub_nonneg]
 
 /-
 The above lemma is already in the mathematical library, under the name `add_le_add_iff_right`:
@@ -200,4 +217,3 @@ equivalences. You learned about tactics:
 * `have`
 * `constructor`
 -/
-
